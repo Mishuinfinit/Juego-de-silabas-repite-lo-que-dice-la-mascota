@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Juego de Repetir Palabras con Sílabas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🐻 Juego de Repetir Palabras</title>
   <style>
     body {
       font-family: 'Comic Sans MS', cursive;
@@ -11,195 +11,169 @@
       text-align: center;
       padding: 20px;
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      box-sizing: border-box;
     }
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 15px;
-      max-width: 90vw;
+      font-size: 2rem;
+      margin-bottom: 10px;
     }
     .mascota {
-      width: 80vw;
+      width: 100%;
       max-width: 250px;
       height: auto;
-      margin-bottom: 20px;
-      user-select: none;
+      margin: 0 auto;
+      display: block;
     }
     #palabraMostrada {
-      font-size: 2rem;
+      font-size: 1.5rem;
       margin: 15px 0;
-      min-height: 2.5em;
-      max-width: 90vw;
-      word-wrap: break-word;
-      font-weight: bold;
+      min-height: 2em;
     }
     #feedback {
       font-size: 1.3rem;
       margin-top: 15px;
-      min-height: 2em;
-      max-width: 90vw;
+      min-height: 1.5em;
+    }
+    button {
+      font-size: 1.1rem;
+      padding: 12px 25px;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 8px;
+      background-color: #ffb300;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    button:hover {
+      background-color: #ffa000;
     }
     .botones-container {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
-      max-width: 90vw;
-    }
-    button {
-      font-size: 1.2rem;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 10px;
-      background-color: #ffb300;
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      transition: background-color 0.3s ease;
-      flex: 1 1 150px;
-      max-width: 200px;
-      user-select: none;
-    }
-    button:hover {
-      background-color: #ffa000;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
-    /* Media queries para móviles pequeños */
     @media (max-width: 480px) {
       h1 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
       }
       #palabraMostrada {
-        font-size: 1.6rem;
+        font-size: 1.2rem;
       }
       #feedback {
         font-size: 1rem;
       }
       button {
         font-size: 1rem;
-        padding: 10px 18px;
-        max-width: 150px;
+        padding: 10px 20px;
       }
     }
   </style>
 </head>
 <body>
   <h1>🐻 Repite con la Mascota</h1>
-  <img src="gato.png" alt="Mascota" class="mascota" />
-  <p id="palabraMostrada">Presiona "Nueva palabra" para comenzar</p>
+  <img id="mascota" src="gato.png" alt="Mascota" class="mascota" />
+  <p id="palabraMostrada">Haz clic para obtener una palabra</p>
+  
   <div class="botones-container">
     <button onclick="nuevaPalabra()">🎲 Nueva palabra</button>
-    <button onclick="decirPalabraCompleta()" id="btnDecirCompleta" disabled>🔊 Decir palabra completa</button>
-    <button onclick="decirPalabraSilabas()" id="btnDecirSilabas" disabled>🔊 Decir palabra por sílabas</button>
-    <button onclick="iniciarReconocimiento()" id="btnReconocer" disabled>🎤 Repetir palabra</button>
+    <button onclick="reproducirSilabas()">🔊 Escuchar sílabas</button>
+    <button onclick="hablar(palabraActual)">📣 Escuchar completa</button>
+    <button onclick="iniciarReconocimiento()">🎤 Repetir palabra</button>
   </div>
+
   <p id="feedback"></p>
+
+  <!-- Sonidos -->
+  <audio id="sonidoAcierto" src="acierto.mp3" preload="auto"></audio>
+  <audio id="sonidoError" src="error.mp3" preload="auto"></audio>
 
   <script>
     const palabras = [
-      { palabra: "armario", silabas: ["ar", "ma", "rio"] },
-      { palabra: "auto", silabas: ["au", "to"] },
-      { palabra: "gato", silabas: ["ga", "to"] },
-      { palabra: "camisa", silabas: ["ca", "mi", "sa"] },
-      { palabra: "escoba", silabas: ["es", "co", "ba"] },
-      { palabra: "jirafa", silabas: ["ji", "ra", "fa"] },
-      { palabra: "luna", silabas: ["lu", "na"] },
-      { palabra: "manzana", silabas: ["man", "za", "na"] },
-      { palabra: "mesa", silabas: ["me", "sa"] },
-      { palabra: "nube", silabas: ["nu", "be"] },
-      { palabra: "pato", silabas: ["pa", "to"] },
-      { palabra: "perro", silabas: ["pe", "rro"] },
-      { palabra: "silla", silabas: ["si", "lla"] },
-      { palabra: "tortuga", silabas: ["tor", "tu", "ga"] },
-      { palabra: "zapato", silabas: ["za", "pa", "to"] },
-      { palabra: "pelota", silabas: ["pe", "lo", "ta"] },
+      "armario", "auto", "gato", "camisa",
+      "escoba", "jirafa", "luna", "manzana",
+      "mesa", "nube", "pato", "perro",
+      "silla", "tortuga", "zapato", "pelota"
     ];
 
-    let palabraActual = null;
-    const palabraMostrada = document.getElementById("palabraMostrada");
-    const feedback = document.getElementById("feedback");
-    const btnDecirCompleta = document.getElementById("btnDecirCompleta");
-    const btnDecirSilabas = document.getElementById("btnDecirSilabas");
-    const btnReconocer = document.getElementById("btnReconocer");
+    let palabraActual = "";
 
-    async function decir(texto) {
-      return new Promise(resolve => {
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = "es-ES";
-        utterance.onend = resolve;
-        speechSynthesis.speak(utterance);
-      });
+    function nuevaPalabra() {
+      const aleatoria = palabras[Math.floor(Math.random() * palabras.length)];
+      palabraActual = aleatoria;
+      document.getElementById("palabraMostrada").textContent = "📣 La palabra es: " + palabraActual;
+      hablar(palabraActual);
+      cambiarMascota("neutra");
+      document.getElementById("feedback").textContent = "";
     }
 
-    function esperar(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+    function hablar(texto) {
+      const mensaje = new SpeechSynthesisUtterance(texto);
+      mensaje.lang = "es-ES";
+      speechSynthesis.speak(mensaje);
     }
 
-    async function decirSilabas(silabas) {
+    function reproducirSilabas() {
+      const silabas = dividirSilabas(palabraActual);
+      reproducirSecuencia(silabas);
+    }
+
+    function dividirSilabas(palabra) {
+      // División simple por vocales como ejemplo (puedes mejorarla)
+      return palabra.split(/(?<=[aeiouáéíóú])/i);
+    }
+
+    async function reproducirSecuencia(silabas) {
       for (const silaba of silabas) {
-        await decir(silaba);
-        await esperar(500);
+        hablar(silaba);
+        await new Promise(r => setTimeout(r, 500));
       }
-    }
-
-    async function nuevaPalabra() {
-      if(speechSynthesis.speaking) speechSynthesis.cancel();
-      feedback.textContent = "";
-      const indice = Math.floor(Math.random() * palabras.length);
-      palabraActual = palabras[indice];
-      palabraMostrada.textContent = `Palabra: ${palabraActual.palabra}`;
-      btnDecirCompleta.disabled = false;
-      btnDecirSilabas.disabled = false;
-      btnReconocer.disabled = false;
-      // Decir sílabas por defecto
-      await decirSilabas(palabraActual.silabas);
-    }
-
-    async function decirPalabraCompleta() {
-      if (!palabraActual) return;
-      if(speechSynthesis.speaking) speechSynthesis.cancel();
-      await decir(palabraActual.palabra);
-    }
-
-    async function decirPalabraSilabas() {
-      if (!palabraActual) return;
-      if(speechSynthesis.speaking) speechSynthesis.cancel();
-      await decirSilabas(palabraActual.silabas);
     }
 
     function iniciarReconocimiento() {
       if (!palabraActual) {
-        feedback.textContent = "Primero obtén una palabra con el botón 'Nueva palabra'.";
+        alert("Primero genera una palabra.");
         return;
       }
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "es-ES";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
 
-      feedback.textContent = "🎙️ Escuchando...";
-      recognition.start();
+      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      reconocimiento.lang = "es-ES";
+      reconocimiento.start();
 
-      recognition.onresult = (event) => {
-        const dicho = event.results[0][0].transcript.toLowerCase().trim();
-        if (dicho === palabraActual.palabra.toLowerCase()) {
-          feedback.textContent = "✅ ¡Muy bien pronunciado!";
+      reconocimiento.onresult = function (event) {
+        const dicho = event.results[0][0].transcript.toLowerCase();
+        const feedback = document.getElementById("feedback");
+
+        if (dicho.includes(palabraActual.toLowerCase())) {
+          feedback.textContent = "✅ ¡Muy bien!";
           feedback.style.color = "green";
+          document.getElementById("sonidoAcierto").play();
+          cambiarMascota("feliz");
         } else {
-          feedback.textContent = `❌ Dijiste "${dicho}". Intenta de nuevo.`;
+          feedback.textContent = `❌ Escuché: "${dicho}". Intenta de nuevo.`;
           feedback.style.color = "red";
+          document.getElementById("sonidoError").play();
+          cambiarMascota("triste");
         }
       };
 
-      recognition.onerror = (event) => {
-        feedback.textContent = "❌ No se pudo acceder al micrófono o no se reconoció tu voz.";
-        feedback.style.color = "red";
+      reconocimiento.onerror = () => {
+        alert("No se pudo acceder al micrófono. Usa Google Chrome y acepta los permisos.");
       };
+    }
+
+    function cambiarMascota(estado) {
+      const mascota = document.getElementById("mascota");
+      if (estado === "feliz") {
+        mascota.src = "mascota_feliz.gif";
+      } else if (estado === "triste") {
+        mascota.src = "mascota_triste.gif";
+      } else {
+        mascota.src = "mascota_neutral.gif";
+      }
     }
   </script>
 </body>
